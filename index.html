@@ -78,7 +78,6 @@ li{margin:10px 0;line-height:1.5}
 </div>
 
 <script>
-  <script>
 function summarize(){
   const text = document.getElementById("lesson").value.trim();
   const result = document.getElementById("result");
@@ -88,21 +87,21 @@ function summarize(){
     return;
   }
 
-  // แยกข้อความด้วยการขึ้นบรรทัดใหม่ และช่องว่าง
-  const sentences = text
-    .split(/\n+|\s{2,}/)
-    .map(s => s.trim())
-    .filter(s => s.length > 0);
-
-  // ดึงข้อความส่วนสำคัญมาแสดงเป็น Bullet points
-  const summary = sentences.slice(0, 5); 
+  // หั่นข้อความภาษาไทยออกเป็นท่อนๆ ละประมาณ 120 ตัวอักษร
+  const chunkSize = 120;
+  const chunks = [];
+  
+  for (let i = 0; i < text.length && chunks.length < 5; i += chunkSize) {
+    chunks.push(text.slice(i, i + chunkSize));
+  }
 
   let htmlOutput = "<h2>📚 ผลสรุป</h2><ul>";
-  summary.forEach(sentence => {
-    htmlOutput += `<li>🌱 ${sentence}</li>`;
+  chunks.forEach(chunk => {
+    htmlOutput += `<li>🌱 ${chunk}...</li>`;
   });
   htmlOutput += "</ul>";
 
   result.innerHTML = htmlOutput;
 }
 </script>
+
