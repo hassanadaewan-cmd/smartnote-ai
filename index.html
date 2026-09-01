@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartNote AI</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#ffeaf4;
+  color:#444;
+}
+.container{
+  max-width:720px;
+  margin:30px auto;
+  padding:25px;
+  background:white;
+  border-radius:24px;
+  box-shadow:0 8px 25px rgba(0,0,0,.08);
+}
+h1{text-align:center;color:#e85d9e;margin-bottom:8px}
+.subtitle{text-align:center;color:#777;margin-bottom:22px}
+label{font-weight:bold;color:#d94f91}
+textarea{
+  width:100%;
+  height:280px;
+  margin-top:10px;
+  padding:15px;
+  border:2px solid #f4bfd7;
+  border-radius:16px;
+  resize:vertical;
+  font-size:16px;
+  outline:none;
+}
+textarea:focus{border-color:#e85d9e}
+button{
+  width:100%;
+  margin-top:15px;
+  padding:15px;
+  border:0;
+  border-radius:16px;
+  background:#e85d9e;
+  color:white;
+  font-size:18px;
+  font-weight:bold;
+}
+button:active{transform:scale(.99)}
+.result{
+  margin-top:24px;
+  padding:20px;
+  background:#fff5fa;
+  border-radius:18px;
+  min-height:100px;
+}
+.result h2{color:#d94f91;margin-top:0}
+li{margin:10px 0;line-height:1.5}
+.footer{text-align:center;font-size:13px;color:#999;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🌸 SmartNote AI</h1>
+  <div class="subtitle">ระบบช่วยสรุปบทเรียนหลังเรียนเสร็จ 📚</div>
+
+  <label for="lesson">📝 เนื้อหาที่เรียน</label>
+  <textarea id="lesson" placeholder="พิมพ์หรือวางเนื้อหาที่เรียนตรงนี้..."></textarea>
+
+  <button onclick="summarize()">✨ สรุปเนื้อหา</button>
+
+  <div class="result" id="result">
+    <h2>📚 ผลสรุป</h2>
+    <p>ใส่เนื้อหาแล้วกด “สรุปเนื้อหา” ได้เลย</p>
+  </div>
+
+  <div class="footer">SmartNote AI — เว็บไซต์ช่วยจัดสรุปบทเรียน</div>
+</div>
+
+<script>
+function summarize(){
+  const text=document.getElementById("lesson").value.trim();
+  const result=document.getElementById("result");
+
+  if(!text){
+    alert("กรุณาใส่เนื้อหาก่อนนะ 💗");
+    return;
+  }
+
+  const sentences=text
+    .split(/[.!?。！？\n]/)
+    .map(s=>s.trim())
+    .filter(s=>s.length>0);
+
+  const summary=sentences.slice(0,10);
+
+  result.innerHTML="<h2>📚 ผลสรุป</h2><ul>"+
+    summary.map(s=>"<li>"+escapeHTML(s)+"</li>").join("")+
+    "</ul>";
+}
+
+function escapeHTML(text){
+  const div=document.createElement("div");
+  div.textContent=text;
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>
