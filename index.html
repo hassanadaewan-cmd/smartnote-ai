@@ -5,16 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Smart Note AI</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; background-color: #f9f9f9; }
-    textarea { width: 100%; height: 150px; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
-    button { width: 100%; padding: 12px; margin-top: 10px; background-color: #e85d9e; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; background-color: #fff0f5; }
+    h2 { color: #d81b60; }
+    textarea { width: 100%; height: 160px; padding: 12px; border-radius: 12px; border: 2px solid #f48fb1; font-size: 16px; box-sizing: border-box; outline: none; }
+    textarea:focus { border-color: #e85d9e; }
+    button { width: 100%; padding: 14px; margin-top: 15px; background-color: #e85d9e; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
     button:active { transform: scale(0.98); }
-    #result { margin-top: 20px; padding: 15px; background: white; border-radius: 8px; border: 1px solid #ddd; }
+    #result { margin-top: 24px; padding: 16px; background: white; border-radius: 12px; border: 1px solid #f8bbd0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    ul { padding-left: 20px; line-height: 1.6; }
+    li { margin-bottom: 8px; color: #333; }
   </style>
 </head>
 <body>
 
-  <h2>Smart Note AI - ระบบช่วยสรุปบทเรียน</h2>
+  <h2>Smart note AI - ระบบผู้ช่วยสรุปบทเรียนอัจฉริยะ</h2>
   <textarea id="lesson" placeholder="วางเนื้อหาบทเรียนที่ต้องการสรุปที่นี่..."></textarea>
   <button onclick="summarize()">✨ สรุปเนื้อหา</button>
 
@@ -33,17 +37,25 @@
       return;
     }
 
-    // ตัดข้อความตามความยาว (ท่อนละประมาณ 120 ตัวอักษร)
-    const chunkSize = 120;
-    const chunks = [];
-    
-    for (let i = 0; i < text.length && chunks.length < 5; i += chunkSize) {
-      chunks.push(text.slice(i, i + chunkSize));
-    }
+    // ประมวลผลแยกประโยคภาษาไทย
+    let rawSentences = text.split(/[\n|\s{2,}|/]/).map(s => s.trim()).filter(s => s.length > 0);
+    let finalSentences = [];
+
+    rawSentences.forEach(sentence => {
+      if(sentence.length > 100){
+        for (let i = 0; i < sentence.length; i += 90) {
+          finalSentences.push(sentence.slice(i, i + 90));
+        }
+      } else {
+        finalSentences.push(sentence);
+      }
+    });
+
+    const summary = finalSentences.slice(0, 6);
 
     let htmlOutput = "<h2>📚 ผลสรุป</h2><ul>";
-    chunks.forEach(chunk => {
-      htmlOutput += `<li>🌱 ${chunk}...</li>`;
+    summary.forEach(item => {
+      htmlOutput += `<li>🌱 ${item}${item.length >= 90 ? '...' : ''}</li>`;
     });
     htmlOutput += "</ul>";
 
