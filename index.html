@@ -78,32 +78,31 @@ li{margin:10px 0;line-height:1.5}
 </div>
 
 <script>
+  <script>
 function summarize(){
-  const text=document.getElementById("lesson").value.trim();
-  const result=document.getElementById("result");
+  const text = document.getElementById("lesson").value.trim();
+  const result = document.getElementById("result");
 
   if(!text){
     alert("กรุณาใส่เนื้อหาก่อนนะ 💗");
     return;
   }
 
-  const sentences=text
-    .split(/[.!?。！？\n]/)
-    .map(s=>s.trim())
-    .filter(s=>s.length>0);
+  // แยกข้อความด้วยการขึ้นบรรทัดใหม่ และช่องว่าง
+  const sentences = text
+    .split(/\n+|\s{2,}/)
+    .map(s => s.trim())
+    .filter(s => s.length > 0);
 
-  const summary=sentences.slice(0,10);
+  // ดึงข้อความส่วนสำคัญมาแสดงเป็น Bullet points
+  const summary = sentences.slice(0, 5); 
 
-  result.innerHTML="<h2>📚 ผลสรุป</h2><ul>"+
-    summary.map(s=>"<li>"+escapeHTML(s)+"</li>").join("")+
-    "</ul>";
-}
+  let htmlOutput = "<h2>📚 ผลสรุป</h2><ul>";
+  summary.forEach(sentence => {
+    htmlOutput += `<li>🌱 ${sentence}</li>`;
+  });
+  htmlOutput += "</ul>";
 
-function escapeHTML(text){
-  const div=document.createElement("div");
-  div.textContent=text;
-  return div.innerHTML;
+  result.innerHTML = htmlOutput;
 }
 </script>
-</body>
-</html>
