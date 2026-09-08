@@ -1,67 +1,189 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Note AI</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; background-color: #fff0f5; }
-    h2 { color: #d81b60; }
-    textarea { width: 100%; height: 160px; padding: 12px; border-radius: 12px; border: 2px solid #f48fb1; font-size: 16px; box-sizing: border-box; outline: none; }
-    textarea:focus { border-color: #e85d9e; }
-    button { width: 100%; padding: 14px; margin-top: 15px; background-color: #e85d9e; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
-    button:active { transform: scale(0.98); }
-    #result { margin-top: 24px; padding: 16px; background: white; border-radius: 12px; border: 1px solid #f8bbd0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    ul { padding-left: 20px; line-height: 1.6; }
-    li { margin-bottom: 8px; color: #333; }
-  </style>
-</head>
-<body>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <h2>Smart note AI - ระบบผู้ช่วยสรุปบทเรียนอัจฉริยะ</h2>
-  <textarea id="lesson" placeholder="วางเนื้อหาบทเรียนที่ต้องการสรุปที่นี่..."></textarea>
-  <button onclick="summarize()">✨ สรุปเนื้อหา</button>
+<title>SmartNote AI</title>
 
-  <div id="result">
-    <h2>📚 ผลสรุป</h2>
-    <p style="color: #888;">ผลการสรุปจะแสดงที่นี่...</p>
-  </div>
-
-  <script>
-  function summarize(){
-    const text = document.getElementById("lesson").value.trim();
-    const result = document.getElementById("result");
-
-    if(!text){
-      alert("กรุณาใส่เนื้อหาก่อนนะ 💗");
-      return;
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #fff0f7;
+        margin: 0;
+        padding: 20px;
     }
 
-    // ประมวลผลแยกประโยคภาษาไทย
-    let rawSentences = text.split(/[\n|\s{2,}|/]/).map(s => s.trim()).filter(s => s.length > 0);
-    let finalSentences = [];
+    .container {
+        max-width: 800px;
+        margin: auto;
+    }
 
-    rawSentences.forEach(sentence => {
-      if(sentence.length > 100){
-        for (let i = 0; i < sentence.length; i += 90) {
-          finalSentences.push(sentence.slice(i, i + 90));
+    h1 {
+        text-align: center;
+        color: #e45b9b;
+    }
+
+    .subtitle {
+        text-align: center;
+        color: #777;
+        margin-bottom: 20px;
+    }
+
+    textarea {
+        width: 100%;
+        min-height: 250px;
+        padding: 15px;
+        box-sizing: border-box;
+        border: 2px solid #f3a6c8;
+        border-radius: 12px;
+        font-size: 16px;
+        resize: vertical;
+    }
+
+    button {
+        width: 100%;
+        margin-top: 15px;
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        background: #e85b9d;
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #d94b8d;
+    }
+
+    .result {
+        margin-top: 25px;
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 3px 10px #ddd;
+    }
+
+    .result h2 {
+        color: #e45b9b;
+    }
+
+    .topic {
+        margin-top: 20px;
+        padding: 15px;
+        background: #fff5fa;
+        border-left: 5px solid #e85b9d;
+        border-radius: 8px;
+    }
+
+    .topic h3 {
+        color: #d94b8d;
+        margin-top: 0;
+    }
+
+    .topic p {
+        line-height: 1.8;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🌸 SmartNote AI 📚</h1>
+
+    <div class="subtitle">
+        ระบบผู้ช่วยสรุปบทเรียนอัจฉริยะ
+    </div>
+
+    <textarea id="inputText"
+        placeholder="วางเนื้อหาบทเรียนที่นี่..."></textarea>
+
+    <button onclick="summarize()">
+        ✨ สรุปบทเรียน
+    </button>
+
+    <div class="result" id="result">
+        <h2>📖 ผลการสรุป</h2>
+        <p>ใส่เนื้อหาแล้วกดปุ่ม “สรุปบทเรียน”</p>
+    </div>
+
+</div>
+
+
+<script>
+
+function summarize() {
+
+    const text = document.getElementById("inputText").value.trim();
+    const result = document.getElementById("result");
+
+    if (text === "") {
+        result.innerHTML = `
+            <h2>📖 ผลการสรุป</h2>
+            <p>⚠️ กรุณาใส่เนื้อหาก่อนนะ</p>
+        `;
+        return;
+    }
+
+    /*
+      แบ่งเนื้อหาออกเป็นย่อหน้า
+      เพื่อไม่ให้สรุปออกมาสั้นเกินไป
+    */
+
+    let paragraphs = text
+        .split(/\n+/)
+        .map(x => x.trim())
+        .filter(x => x.length > 0);
+
+    let output = `
+        <h2>📖 สรุปบทเรียน</h2>
+    `;
+
+    /*
+      แสดงเนื้อหาเป็นหัวข้อ
+    */
+
+    paragraphs.forEach((paragraph, index) => {
+
+        let title = "";
+
+        if (index === 0) {
+            title = "🌱 บทนำ";
+        } 
+        else if (paragraph.includes("โครงสร้าง")) {
+            title = "🌿 โครงสร้างของพืช";
         }
-      } else {
-        finalSentences.push(sentence);
-      }
+        else if (paragraph.includes("สังเคราะห์")) {
+            title = "☀️ การสังเคราะห์ด้วยแสง";
+        }
+        else if (paragraph.includes("ลำเลียง")) {
+            title = "💧 การลำเลียงสาร";
+        }
+        else if (paragraph.includes("คายน้ำ")) {
+            title = "🍃 การคายน้ำ";
+        }
+        else if (paragraph.includes("สืบพันธุ์")) {
+            title = "🌸 การสืบพันธุ์ของพืช";
+        }
+        else {
+            title = "📌 หัวข้อที่ " + (index + 1);
+        }
+
+        output += `
+            <div class="topic">
+                <h3>${title}</h3>
+                <p>${paragraph}</p>
+            </div>
+        `;
     });
 
-    const summary = finalSentences.slice(0, 6);
+    result.innerHTML = output;
+}
 
-    let htmlOutput = "<h2>📚 ผลสรุป</h2><ul>";
-    summary.forEach(item => {
-      htmlOutput += `<li>🌱 ${item}${item.length >= 90 ? '...' : ''}</li>`;
-    });
-    htmlOutput += "</ul>";
-
-    result.innerHTML = htmlOutput;
-  }
-  </script>
+</script>
 
 </body>
 </html>
