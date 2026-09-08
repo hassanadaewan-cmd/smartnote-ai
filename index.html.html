@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SmartNote AI</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#fff0f7;color:#333}
+main{max-width:800px;margin:25px auto;padding:24px}
+.card{background:#fff;padding:24px;border-radius:24px;box-shadow:0 8px 25px #ddd}
+h1{text-align:center;color:#e45b9b} .sub{text-align:center;color:#777}
+label{display:block;font-weight:bold;color:#d94f91;margin:18px 0 8px}
+input,textarea{width:100%;box-sizing:border-box;padding:14px;border:2px solid #f3b4d0;border-radius:14px;font-size:16px}
+textarea{height:280px;resize:vertical}
+button{width:100%;margin-top:15px;padding:15px;border:0;border-radius:14px;background:#e85b9b;color:white;font-size:18px;font-weight:bold}
+button:disabled{opacity:.6}.result{margin-top:22px;padding:20px;background:#fff7fb;border-radius:16px;line-height:1.8}
+h2{color:#d94f91}.note{font-size:13px;color:#888}.error{color:#c0392b}
+</style>
+</head>
+<body>
+<main><div class="card">
+<h1>🌸 SmartNote AI</h1>
+<p class="sub">ระบบช่วยสรุปบทเรียนด้วย AI</p>
+
+<label>🔑 Gemini API Key</label>
+<input id="key" type="password" placeholder="ใส่ Gemini API Key">
+<p class="note">คีย์ใช้ในเบราว์เซอร์นี้เท่านั้น อย่าเผยแพร่คีย์ส่วนตัวในเว็บไซต์สาธารณะ</p>
+
+<label>📝 เนื้อหาที่เรียน</label>
+<textarea id="text" placeholder="วางเนื้อหาบทเรียนยาว ๆ ที่นี่..."></textarea>
+
+<button id="btn" onclick="summarize()">✨ สรุปด้วย AI</button>
+
+<div class="result" id="result">
+<h2>📚 ผลสรุป</h2><p>ใส่เนื้อหาแล้วกดปุ่มได้เลย</p>
+</div>
+</div></main>
+
+<script>
+async function summarize(){
+ const key=document.getElementById("key").value.trim();
+ const text=document.getElementById("text").value.trim();
+ const btn=document.getElementById("btn"), result=document.getElementById("result");
+ if(!key){result.innerHTML='<h2>📚 ผลสรุป</h2><p class="error">กรุณาใส่ Gemini API Key</p>';return}
+ if(!text){result.innerHTML='<h2>📚 ผลสรุป</h2><p class="error">กรุณาใส่เนื้อหาก่อน</p>';return}
+ btn.disabled=true;btn.textContent="⏳ AI กำลังสรุป...";
+ result.innerHTML="<h2>📚 ผลสรุป</h2><p>กำลังสรุป...</p>";
+
+ const prompt=`คุณเป็นผู้ช่วยสรุปบทเรียนสำหรับนักเรียน
+สรุปเนื้อหานี้ให้สั้นลงประมาณ 25-40% โดย "เรียบเรียงใหม่" ไม่ใช่แค่คัดประโยคเดิม
+ต้องเก็บใจความหลัก คำศัพท์สำคัญ ตัวเลข/ข้อเท็จจริง และความสัมพันธ์ของเนื้อหา
+ตัดคำซ้ำ ตัวอย่างที่ไม่จำเป็น และรายละเอียดปลีกย่อย
+ห้ามแต่งข้อมูลเพิ่ม
+
+ตอบตามรูปแบบนี้:
+📌 สรุปเนื้อหา
+(ย่อหน้าอ่านง่าย 1-3 ย่อหน้า)
+
+🔑 หัวข้อสำคัญ
+- หัวข้อ: คำอธิบายสั้น ๆ
+- หัวข้อ: คำอธิบายสั้น ๆ
+- หัวข้อ: คำอธิบายสั้น ๆ
+
+🏷️ คำสำคัญ
+คำสำคัญ 5-10 คำ
+
+เนื้อหา:
+${text}`;
+
+ try{
+  const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="+encodeURIComponent(key),{
+   method:"POST",headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
+  });
+  const data=await r.json();
+  if(!r.ok) throw new Error(data.error?.message||"เชื่อมต่อ AI ไม่สำเร็จ");
+  const answer=data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if(!answer) throw new Error("ไม่พบผลสรุปจาก AI");
+  result.innerHTML="<h2>📚 ผลสรุป</h2><div>"+safe(answer).replace(/\n/g,"<br>")+"</div>";
+ }catch(e){
+  result.innerHTML='<h2>📚 ผลสรุป</h2><p class="error">เกิดข้อผิดพลาด: '+safe(e.message)+'</p>';
+ }finally{btn.disabled=false;btn.textContent="✨ สรุปด้วย AI";}
+}
+function safe(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML}
+</script>
+</body>
+</html>
